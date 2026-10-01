@@ -1,0 +1,11 @@
+{
+  "name": "DoceGestão",
+  "short_name": "DoceGestão",
+  "description": "Gestão para confeitaria",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf4ef",
+  "theme_color": "#a95449",
+  "lang": "pt-BR"
+}
