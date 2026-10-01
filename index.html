@@ -222,4 +222,76 @@ init();
 })();
 </script>
 
+
+<!-- DoceGestão — Editor visual da interface -->
+<style>
+#uiEditorBtn{position:fixed;right:18px;bottom:18px;z-index:180;border:0;border-radius:999px;background:#a95449;color:#fff;padding:13px 17px;font-weight:800;box-shadow:0 12px 30px #0003}
+#uiEditor{position:fixed;inset:0;background:#3d292599;display:none;align-items:flex-end;justify-content:center;z-index:170;padding:14px}
+#uiEditor.show{display:flex}
+#uiEditorBox{width:min(760px,100%);max-height:92vh;overflow:auto;background:#fffaf7;border-radius:24px;padding:20px;box-shadow:0 30px 90px #0005}
+.ui-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.ui-head h3{margin:0}.ui-close{border:0;background:#f1e4de;border-radius:10px;width:38px;height:38px}
+.ui-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ui-full{grid-column:1/-1}.ui-help{font-size:12px;color:#8e746d;line-height:1.45}
+.ui-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
+@media(max-width:600px){.ui-grid{grid-template-columns:1fr}}
+</style>
+<button id="uiEditorBtn" type="button" onclick="openUIEditor()">✎ Editar interface</button>
+<div id="uiEditor">
+ <div id="uiEditorBox">
+  <div class="ui-head"><div><h3>Personalizar DoceGestão</h3><div class="ui-help">Altere a aparência e alguns textos sem mexer no código.</div></div><button class="ui-close" onclick="closeUIEditor()">✕</button></div>
+  <div class="ui-grid">
+   <div><label>Nome da confeitaria</label><input id="uiName" placeholder="DoceGestão"></div>
+   <div><label>Cor principal</label><input id="uiPrimary" type="color" style="height:46px;padding:4px"></div>
+   <div><label>Cor de fundo</label><input id="uiBg" type="color" style="height:46px;padding:4px"></div>
+   <div><label>Cor dos textos</label><input id="uiInk" type="color" style="height:46px;padding:4px"></div>
+   <div class="ui-full"><label>Título da tela inicial</label><input id="uiHeroTitle"></div>
+   <div class="ui-full"><label>Descrição da tela inicial</label><textarea id="uiHeroText"></textarea></div>
+   <div><label>Texto do menu "Visão geral"</label><input id="uiNavHome"></div>
+   <div><label>Texto do menu "Produtos"</label><input id="uiNavProducts"></div>
+   <div><label>Texto do menu "Receitas"</label><input id="uiNavRecipes"></div>
+   <div><label>Texto do menu "Ingredientes"</label><input id="uiNavIngredients"></div>
+   <div><label>Texto do menu "Pedidos"</label><input id="uiNavOrders"></div>
+   <div><label>Texto do menu "Estoque"</label><input id="uiNavStock"></div>
+   <div><label>Texto do menu "Financeiro"</label><input id="uiNavFinance"></div>
+   <div><label>Texto do menu "Cardápio"</label><input id="uiNavMenu"></div>
+   <div class="ui-full ui-help">As alterações são salvas neste aparelho/navegador. Para levar a personalização para outro aparelho, use o backup de dados ou publique uma nova versão do aplicativo.</div>
+  </div>
+  <div class="ui-actions"><button class="btn light" onclick="resetUITheme()">Restaurar padrão</button><button class="btn" onclick="saveUISettings()">Salvar alterações</button></div>
+ </div>
+</div>
+<script>
+(function(){
+ const KEY='docegestao-ui-v1';
+ const defaults={name:'DoceGestão',primary:'#a95449',bg:'#fbf4ef',ink:'#3d2925',
+ heroTitle:'Seu negócio, mais organizado e mais lucrativo.',
+ heroText:'Tenha receitas detalhadas, ficha técnica, custos, preço sugerido, pedidos e estoque em um único lugar.',
+ navHome:'Visão geral',navProducts:'Produtos',navRecipes:'Receitas',navIngredients:'Ingredientes',
+ navOrders:'Pedidos',navStock:'Estoque',navFinance:'Financeiro',navMenu:'Cardápio'};
+ function load(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){return {...defaults}}}
+ function apply(x){
+  document.documentElement.style.setProperty('--primary',x.primary);
+  document.documentElement.style.setProperty('--bg',x.bg);
+  document.documentElement.style.setProperty('--ink',x.ink);
+  const logo=document.querySelector('.logo h1'); if(logo) logo.textContent=x.name;
+  const hero=document.querySelector('.hero h3'); if(hero) hero.textContent=x.heroTitle;
+  const hp=document.querySelector('.hero p'); if(hp) hp.textContent=x.heroText;
+  const nav=[x.navHome,x.navProducts,x.navRecipes,x.navIngredients,x.navOrders,x.navStock,x.navFinance,x.navMenu];
+  document.querySelectorAll('#nav button').forEach((b,i)=>{const ico=b.querySelector('.ico'); b.childNodes.forEach(n=>{if(n.nodeType===3)n.remove()}); b.appendChild(document.createTextNode(nav[i]||''));});
+  const title=document.querySelector('.top h2'); if(title && title.textContent==='Visão geral') title.textContent=x.navHome;
+ }
+ window.openUIEditor=function(){
+  const x=load(); apply(x);
+  Object.keys(x).forEach(k=>{const e=document.getElementById('ui'+k.charAt(0).toUpperCase()+k.slice(1));if(e)e.value=x[k]});
+  document.getElementById('uiEditor').classList.add('show');
+ };
+ window.closeUIEditor=function(){document.getElementById('uiEditor').classList.remove('show')};
+ window.saveUISettings=function(){
+  const x={name:document.getElementById('uiName').value.trim()||defaults.name,primary:document.getElementById('uiPrimary').value,bg:document.getElementById('uiBg').value,ink:document.getElementById('uiInk').value,
+  heroTitle:document.getElementById('uiHeroTitle').value.trim()||defaults.heroTitle,heroText:document.getElementById('uiHeroText').value.trim()||defaults.heroText,
+  navHome:document.getElementById('uiNavHome').value.trim()||defaults.navHome,navProducts:document.getElementById('uiNavProducts').value.trim()||defaults.navProducts,navRecipes:document.getElementById('uiNavRecipes').value.trim()||defaults.navRecipes,navIngredients:document.getElementById('uiNavIngredients').value.trim()||defaults.navIngredients,navOrders:document.getElementById('uiNavOrders').value.trim()||defaults.navOrders,navStock:document.getElementById('uiNavStock').value.trim()||defaults.navStock,navFinance:document.getElementById('uiNavFinance').value.trim()||defaults.navFinance,navMenu:document.getElementById('uiNavMenu').value.trim()||defaults.navMenu};
+  localStorage.setItem(KEY,JSON.stringify(x));apply(x);closeUIEditor();if(typeof toast==='function')toast('Interface personalizada e salva neste aparelho!');
+ };
+ window.resetUITheme=function(){localStorage.removeItem(KEY);apply(defaults);openUIEditor()};
+ window.addEventListener('DOMContentLoaded',()=>apply(load()));
+})();
+</script>
 </body></html>
